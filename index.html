@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise Knowledge Hub — RAG Prototype</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f7fb;color:#172033}
+.app{display:flex;min-height:100vh}.sidebar{width:245px;background:#111827;color:#dbe3ef;padding:22px 16px}
+.logo{font-size:19px;font-weight:800;color:white;margin-bottom:28px}.logo span{color:#7dd3fc}
+.nav a{display:block;padding:11px 13px;border-radius:9px;margin:5px 0;color:#b8c2d1;text-decoration:none;font-size:14px}
+.nav a.active,.nav a:hover{background:#243044;color:white}.bottom{margin-top:55px;font-size:12px;color:#7f8da3}
+.main{flex:1;padding:25px 30px;max-width:1500px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+h1{font-size:25px;margin:0}.sub{color:#68758a;font-size:13px;margin-top:5px}.badge{background:#dcfce7;color:#166534;padding:7px 11px;border-radius:20px;font-size:12px;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}.card{background:white;border:1px solid #e5e9f0;border-radius:13px;padding:17px}.label{font-size:12px;color:#748096}.value{font-size:26px;font-weight:800;margin-top:7px}.small{font-size:11px;color:#8390a3;margin-top:4px}
+.grid{display:grid;grid-template-columns:1.45fr .75fr;gap:18px}.panel{background:white;border:1px solid #e3e8ef;border-radius:14px;overflow:hidden}.panelhead{padding:16px 18px;border-bottom:1px solid #edf0f4;display:flex;justify-content:space-between;align-items:center}.panelhead h2{font-size:16px;margin:0}.content{padding:18px}
+.chat{height:370px;overflow:auto;background:#fbfcfe;border-radius:10px;padding:15px}.msg{max-width:88%;padding:12px 14px;border-radius:12px;margin:9px 0;font-size:13px;line-height:1.5}.user{margin-left:auto;background:#e0f2fe}.bot{background:white;border:1px solid #e4e8ee}.source{margin-top:9px;padding:8px 10px;background:#f1f5f9;border-left:3px solid #38bdf8;border-radius:6px;font-size:11px;color:#526174}
+.ask{display:flex;gap:9px;margin-top:12px}.ask input{flex:1;border:1px solid #d8dee8;border-radius:9px;padding:12px;font-size:13px}.ask button{border:0;background:#2563eb;color:white;border-radius:9px;padding:0 19px;font-weight:700;cursor:pointer}
+.docs{width:100%;border-collapse:collapse;font-size:12px}.docs th,.docs td{text-align:left;padding:11px 9px;border-bottom:1px solid #edf0f4}.docs th{color:#748096;font-weight:600}.tag{padding:4px 7px;border-radius:12px;background:#eef2ff;color:#4338ca;font-size:10px}.rightbox{margin-bottom:15px}.progress{height:8px;background:#edf0f4;border-radius:5px;overflow:hidden;margin-top:9px}.progress div{height:100%;background:#2563eb}.flow{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.step{padding:9px 10px;background:#f1f5f9;border-radius:8px;font-size:11px;font-weight:600}.arrow{color:#94a3b8}.note{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:9px;padding:11px;font-size:11px;line-height:1.45}
+@media(max-width:900px){.sidebar{display:none}.main{padding:18px}.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="logo">Enterprise<span>RAG</span></div>
+  <nav class="nav">
+    <a class="active" href="#">💬 Knowledge Chat</a>
+    <a href="#documents">📄 Documents</a>
+    <a href="#pipeline">⚙ RAG Pipeline</a>
+    <a href="#analytics">📊 Analytics</a>
+    <a href="#security">🔐 Security</a>
+  </nav>
+  <div class="bottom">Prototype for Mentor Discussion<br>RAG-based Enterprise Knowledge Management</div>
+</aside>
+
+<main class="main">
+<div class="top"><div><h1>Enterprise Knowledge Hub</h1><div class="sub">Ask questions using your organisation's internal knowledge base.</div></div><div class="badge">● RAG System Online</div></div>
+
+<section class="cards" id="analytics">
+ <div class="card"><div class="label">Indexed Documents</div><div class="value">128</div><div class="small">PDF, DOCX, TXT</div></div>
+ <div class="card"><div class="label">Knowledge Chunks</div><div class="value">4,862</div><div class="small">Embedded & indexed</div></div>
+ <div class="card"><div class="label">Retrieval Accuracy</div><div class="value">91%</div><div class="small">Prototype benchmark</div></div>
+ <div class="card"><div class="label">Avg. Response</div><div class="value">1.8s</div><div class="small">End-to-end estimate</div></div>
+</section>
+
+<div class="grid">
+<section class="panel">
+ <div class="panelhead"><h2>Knowledge Chat</h2><span class="tag">Grounded answers</span></div>
+ <div class="content">
+  <div class="chat" id="chat">
+   <div class="msg user">What is the company's leave policy for new employees?</div>
+   <div class="msg bot">According to the HR policy documents, new employees are eligible for leave according to the organisation's probation and leave rules. The relevant policy states that leave requests should be submitted through the HR system and approved by the reporting manager.
+    <div class="source">📄 HR_Leave_Policy.pdf · Page 4 · Similarity 0.92</div>
+    <div class="source">📄 Employee_Handbook.pdf · Page 18 · Similarity 0.87</div>
+   </div>
+  </div>
+  <div class="ask"><input id="question" placeholder="Ask about company policies, projects, HR, technical docs..."><button onclick="ask()">Ask</button></div>
+ </div>
+</section>
+
+<section>
+ <div class="panel rightbox" id="pipeline">
+  <div class="panelhead"><h2>RAG Pipeline</h2></div>
+  <div class="content">
+   <div class="flow"><span class="step">User Query</span><span class="arrow">→</span><span class="step">Embedding</span><span class="arrow">→</span><span class="step">Vector DB</span><span class="arrow">→</span><span class="step">Top-K</span><span class="arrow">→</span><span class="step">LLM</span></div>
+   <p class="small">Documents → Chunking → Embeddings → Vector Database → Retrieval → Context + Query → LLM → Answer</p>
+  </div>
+ </div>
+ <div class="panel rightbox" id="security">
+  <div class="panelhead"><h2>Security Concept</h2></div>
+  <div class="content">
+   <div class="note">Prototype assumption: company documents are access-controlled. Production deployment should use authentication, role-based retrieval, encryption, audit logs, and preferably a private/self-hosted LLM or enterprise API with suitable data controls.</div>
+  </div>
+ </div>
+</section>
+</div>
+
+<section class="panel" id="documents" style="margin-top:18px">
+ <div class="panelhead"><h2>Knowledge Base</h2><button onclick="alert('Prototype: document upload would connect to the ingestion service.')" style="border:0;background:#2563eb;color:white;padding:8px 12px;border-radius:7px">+ Upload Document</button></div>
+ <div class="content">
+  <table class="docs">
+   <tr><th>Document</th><th>Type</th><th>Department</th><th>Chunks</th><th>Status</th></tr>
+   <tr><td>HR_Leave_Policy.pdf</td><td>PDF</td><td>HR</td><td>42</td><td><span class="tag">Indexed</span></td></tr>
+   <tr><td>Employee_Handbook.pdf</td><td>PDF</td><td>HR</td><td>86</td><td><span class="tag">Indexed</span></td></tr>
+   <tr><td>Engineering_Onboarding.docx</td><td>DOCX</td><td>Engineering</td><td>64</td><td><span class="tag">Indexed</span></td></tr>
+   <tr><td>Product_Architecture.pdf</td><td>PDF</td><td>Engineering</td><td>121</td><td><span class="tag">Indexed</span></td></tr>
+  </table>
+ </div>
+</section>
+</main>
+</div>
+
+<script>
+async function ask(){
+  const input = document.getElementById('question');
+  const q = input.value.trim();
+  if(!q) return;
+  const chat = document.getElementById('chat');
+  
+  // 1. Show user message
+  chat.innerHTML += '<div class="msg user">' + escapeHtml(q) + '</div>';
+  input.value = '';
+  
+  // 2. Show temporary loading message
+  const loadingId = 'loading-' + Date.now();
+  chat.innerHTML += '<div class="msg bot" id="' + loadingId + '">Searching Pinecone Database...</div>';
+  chat.scrollTop = chat.scrollHeight;
+
+  // 3. Call the Python FastAPI Server
+  try {
+    const res = await fetch('/api/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q })
+    });
+    const data = await res.json();
+    
+    // 4. Build the final HTML with the real answer and citations
+    const botMsg = document.getElementById(loadingId);
+    let html = data.answer;
+    
+    if (data.sources && data.sources.length > 0) {
+      data.sources.forEach(src => {
+        html += '<div class="source">📄 ' + escapeHtml(src.source) + ' · Page ' + src.page + '</div>';
+      });
+    }
+    botMsg.innerHTML = html;
+  } catch (err) {
+    document.getElementById(loadingId).innerText = 'Error connecting to the RAG server.';
+  }
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+document.getElementById('question').addEventListener('keydown', e => { if(e.key === 'Enter') ask() });
+</script>
+</body>
+</html>
